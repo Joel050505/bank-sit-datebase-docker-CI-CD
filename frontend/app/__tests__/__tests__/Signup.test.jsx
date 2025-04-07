@@ -1,57 +1,52 @@
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Signup from "@/app/signup/page";
 import "@testing-library/jest-dom";
-import { vi } from "vitest";
 
-// Mocking the fetch API
-global.fetch = vi.fn();
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve([]),
+  })
+);
 
 describe("Signup Component", () => {
   beforeEach(() => {
-    fetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ message: "User created" }),
-    });
+    fetch.mockClear();
   });
 
-  afterEach(() => {
-    vi.resetAllMocks();
+  it("renders form inputs and submit button", () => {
+    render(<Signup />);
+
+    expect(screen.getByPlaceholderText("Enter username")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Enter password")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Register" })
+    ).toBeInTheDocument();
   });
 
-  test("renders form inputs and submit button", () => {
-    const { getByLabelText, getByText } = render(<Signup />);
-    expect(getByLabelText(/Username/i)).toBeInTheDocument();
-    expect(getByLabelText(/Password/i)).toBeInTheDocument();
-    expect(getByText(/Sign up/i)).toBeInTheDocument();
-  });
+  it("allows user to fill in and submit the form", async () => {
+    render(<Signup />);
 
-  test("allows user to fill in and submit the form", async () => {
-    const { getByLabelText, getByText } = render(<Signup />);
-
-    const usernameInput = getByLabelText(/Username/i);
-    const passwordInput = getByLabelText(/Password/i);
-    const submitButton = getByText(/Sign up/i);
+    const usernameInput = screen.getByPlaceholderText("Enter username");
+    const passwordInput = screen.getByPlaceholderText("Enter password");
+    const button = screen.getByRole("button", { name: /register/i });
 
     fireEvent.change(usernameInput, { target: { value: "testuser" } });
     fireEvent.change(passwordInput, { target: { value: "testpass" } });
+    fireEvent.click(button);
 
-    fireEvent.click(submitButton);
-
-    // Wait for the async fetch call to be called
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledTimes(1); // Ensure fetch is called once
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringMatching(/http:\/\/.*:4000\/users/),
+        expect.objectContaining({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: "testuser",
+            password: "testpass",
+          }),
+        })
+      );
     });
-
-    // Ensure fetch was called with the correct parameters
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/create-user"),
-      expect.objectContaining({
-        method: "POST",
-        headers: expect.objectContaining({
-          "Content-Type": "application/json",
-        }),
-        body: expect.stringContaining("testuser"),
-      })
-    );
   });
 });
