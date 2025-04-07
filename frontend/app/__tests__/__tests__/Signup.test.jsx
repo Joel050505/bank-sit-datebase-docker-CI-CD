@@ -1,5 +1,5 @@
 import { render, fireEvent, waitFor } from "@testing-library/react";
-import Signup from "../page"; // Assuming the Signup component is in page.js
+import Signup from "@/app/signup/page";
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
 
