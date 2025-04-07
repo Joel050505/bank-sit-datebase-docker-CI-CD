@@ -1,17 +1,4 @@
 {
-  "name": "frontend",
-  "version": "1.0.0",
-  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).",
-  "license": "ISC",
-  "author": "",
-  "type": "module",
-  "main": "jest.config.js",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "test": "jest --watchAll=false --passWithNoTests"
-  },
   "dependencies": {
     "lucide-react": "^0.487.0",
     "next": "latest",
@@ -19,6 +6,12 @@
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "server-only": "^0.0.1"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "jest --watchAll=false --passWithNoTests"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
