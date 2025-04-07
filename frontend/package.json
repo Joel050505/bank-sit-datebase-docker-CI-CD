@@ -5,6 +5,12 @@
     "react-dom": "^18.2.0",
     "server-only": "^0.0.1"
   },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "jest --watchAll=false --passWithNoTests"
+  },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.1.5",
