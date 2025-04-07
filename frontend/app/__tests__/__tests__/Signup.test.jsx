@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import Signup from "../path-to-your-component/Signup"; // adjust this path
+import Signup from "@/app/signup/page";
 import "@testing-library/jest-dom";
 
 // Mock fetch globally
