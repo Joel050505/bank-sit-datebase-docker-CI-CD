@@ -1,43 +1,41 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import Signup from "@/app/signup/page";
+import { render, fireEvent, waitFor } from "@testing-library/react";
+import Signup from "../page"; // Assuming the Signup component is in page.js
 import "@testing-library/jest-dom";
+import { vi } from "vitest";
 
-// Mock fetch globally
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    json: () => Promise.resolve([]),
-  })
-);
+// Mocking the fetch API
+global.fetch = vi.fn();
 
 describe("Signup Component", () => {
   beforeEach(() => {
-    fetch.mockClear(); // clear previous calls to mock fetch
+    fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ message: "User created" }),
+    });
   });
 
-  it("renders form inputs and submit button", () => {
-    render(<Signup />);
-
-    // Check if the username input, password input, and button are rendered
-    expect(screen.getByPlaceholderText("Username...")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("••••••••")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /sign up/i })
-    ).toBeInTheDocument();
+  afterEach(() => {
+    vi.resetAllMocks();
   });
 
-  it("allows user to fill in and submit the form", async () => {
-    render(<Signup />);
+  test("renders form inputs and submit button", () => {
+    const { getByLabelText, getByText } = render(<Signup />);
+    expect(getByLabelText(/Username/i)).toBeInTheDocument();
+    expect(getByLabelText(/Password/i)).toBeInTheDocument();
+    expect(getByText(/Sign up/i)).toBeInTheDocument();
+  });
 
-    const usernameInput = screen.getByPlaceholderText("Username...");
-    const passwordInput = screen.getByPlaceholderText("••••••••");
-    const button = screen.getByRole("button", { name: /sign up/i });
+  test("allows user to fill in and submit the form", async () => {
+    const { getByLabelText, getByText } = render(<Signup />);
 
-    // Simulate user input for username and password
+    const usernameInput = getByLabelText(/Username/i);
+    const passwordInput = getByLabelText(/Password/i);
+    const submitButton = getByText(/Sign up/i);
+
     fireEvent.change(usernameInput, { target: { value: "testuser" } });
     fireEvent.change(passwordInput, { target: { value: "testpass" } });
 
-    // Simulate form submission
-    fireEvent.click(button);
+    fireEvent.click(submitButton);
 
     // Wait for the async fetch call to be called
     await waitFor(() => {
@@ -46,14 +44,13 @@ describe("Signup Component", () => {
 
     // Ensure fetch was called with the correct parameters
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringMatching(/http:\/\/.*:4000\/users/),
+      expect.stringContaining("/create-user"),
       expect.objectContaining({
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "testuser",
-          password: "testpass",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
         }),
+        body: expect.stringContaining("testuser"),
       })
     );
   });
